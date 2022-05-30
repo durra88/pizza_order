@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pizza_order/ingredient.dart';
@@ -5,24 +7,28 @@ import 'package:pizza_order/ingredient.dart';
 class PizzaController extends GetxController with GetTickerProviderStateMixin {
   late AnimationController animationController;
   late AnimationController animationControllerCart;
-  late Animation cartAnimation;
-  List<Animation> animationList = <Animation>[];
-  final listIngredients = <Ingredient>[];
+  RxBool isTapped = false.obs;
+  var cartSize = 35.0.obs;
+ 
+  List<Animation> animationList = <Animation>[].obs;
+  final listIngredients = <Ingredient>[].obs;
   RxBool facused = false.obs;
   RxDouble total = 15.0.obs;
   late BoxConstraints pizzaConstraints;
+
   @override
   void onInit() {
+    //!text
     animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 700));
+    //!cart
     animationControllerCart = AnimationController(
-        lowerBound: 1.0,
-        upperBound: 1.5,
+        lowerBound: 0.0,
+        upperBound: 1.0,
         vsync: this,
         duration: const Duration(milliseconds: 150),
         reverseDuration: const Duration(milliseconds: 400));
-
-    cartAnimation =CurvedAnimation(parent: animationControllerCart, curve:  Curves.easeOut) ;
+     
 
     super.onInit();
   }
@@ -105,6 +111,18 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
     animationList.add(CurvedAnimation(
         parent: animationController,
         curve: const Interval(0.3, 1.0, curve: Curves.decelerate)));
+  }
+
+  Future<void> animateButton() async {
+    animationControllerCart.forward(from: 0.0);
+    animationControllerCart.reverse(from: 0.8);
+     animationControllerCart.addListener(() {
+          log("@@@@@@cc${animationControllerCart.forward}@@@");
+         
+        
+        });
+
+          log("@@@@@@hi it me @@@");
   }
 
   @override

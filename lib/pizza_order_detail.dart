@@ -64,6 +64,7 @@ class PizzaOrderDetail extends StatelessWidget {
   }
 }
 
+//!---------------------------------------------------------------------------------------Pizza Image
 class _PizzaDetails extends StatelessWidget {
   const _PizzaDetails({Key? key}) : super(key: key);
 
@@ -123,28 +124,38 @@ class _PizzaDetails extends StatelessWidget {
             const SizedBox(
               height: 5,
             ),
-            AnimatedSwitcher(
+            //!---------------------------------------------------------------------------------------Pizza  Price
+
+            Obx(
+              () => AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 transitionBuilder: (child, animation) {
+                  // animation.addListener(() {
+                  //   log("*******${animation.value}*******");
+                  // });
+
                   return FadeTransition(
                     opacity: animation,
                     child: SlideTransition(
-                        position: animation.drive(Tween<Offset>(
+                        position: animation.drive(
+                          Tween<Offset>(
                             begin: const Offset(0.0, 0.0),
-                            end: Offset(0.0, animation.value))),
+                            end: Offset(0.0, animation.value),
+                          ),
+                        ),
                         child: child),
                   );
                 },
-                child: Obx(
-                  () => Text(
-                    key: UniqueKey(),
-                    "\$${pizzaController.total.value}",
-                    style: const TextStyle(
-                        color: Colors.brown,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30),
-                  ),
-                )),
+                child: Text(
+                  "\$${pizzaController.total.value}",
+                  key: UniqueKey(),
+                  style: const TextStyle(
+                      color: Colors.brown,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30),
+                ),
+              ),
+            ),
           ],
         ),
         AnimatedBuilder(
@@ -156,6 +167,7 @@ class _PizzaDetails extends StatelessWidget {
     );
   }
 }
+//!---------------------------------------------------------------------------------------Cart Button
 
 class _PizzaCartButton extends StatelessWidget {
   const _PizzaCartButton({Key? key, required this.onTap}) : super(key: key);
@@ -166,41 +178,20 @@ class _PizzaCartButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         onTap;
-        pizzaController.animationControllerCart.forward(from: 0.0);
-        pizzaController.animationControllerCart.reverse();
-        print("------------------------------------------------------tap");
+        pizzaController.cartSize.value = 35.01;
+        pizzaController.animateButton();
+        // pizzaController.animationControllerCart.addListener(() {
+        //   log("@@@@@@${pizzaController.animationControllerCart}@@@");
+        // });
       },
       child: AnimatedBuilder(
         animation: pizzaController.animationControllerCart,
         builder: (context, child) {
           return Transform.scale(
-            scale: 2 - pizzaController.animationControllerCart.value,
-            child: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.orange.withOpacity(0.5),
-                        Colors.orange,
-                      ]),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 15.0,
-                      offset: Offset(0.0, 4.0),
-                      spreadRadius: 4.0,
-                    )
-                  ]),
-              child: const Icon(
-                Icons.shopping_cart_outlined,
-                color: Colors.white,
-                size: 35,
-              ),
-            ),
-          );
+              scale: 1 - pizzaController.animationControllerCart.value,
+              child: child);
         },
+
         child: Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
@@ -219,16 +210,18 @@ class _PizzaCartButton extends StatelessWidget {
                   spreadRadius: 4.0,
                 )
               ]),
-          child: const Icon(
+          child: Icon(
             Icons.shopping_cart_outlined,
             color: Colors.white,
-            size: 35,
+            size: pizzaController.cartSize.value,
           ),
-        ),
-      ),
+        ),)
+       
+      
     );
   }
 }
+//!---------------------------------------------------------------------------------------Pizza list item class
 
 class _PizzaIngradients extends StatelessWidget {
   const _PizzaIngradients({Key? key}) : super(key: key);
@@ -246,6 +239,7 @@ class _PizzaIngradients extends StatelessWidget {
         });
   }
 }
+//!---------------------------------------------------------------------------------------Pizza list item widget
 
 class _PizzaIngredientItem extends StatelessWidget {
   const _PizzaIngredientItem({
