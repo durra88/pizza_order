@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pizza_order/pizza_order_detail.dart';
+import 'package:pizza_order/screen/pizza_order_detail.dart';
 
 void main() {
   runApp(const MyApp());
