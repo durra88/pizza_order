@@ -1,34 +1,49 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:pizza_order/ingredient.dart';
+
+import '../screen/pizza_order_detail.dart';
 
 class PizzaController extends GetxController with GetTickerProviderStateMixin {
   late AnimationController animationController;
   late AnimationController animationControllerCart;
   late AnimationController animationControllerRotation;
+  late AnimationController animationControllerPizza;
+  late Animation<double> pizzaScaleAnimation;
+  late Animation<double> pizzaOpacityAnimation;
+  late Animation<double> boxEnterScaleAnimation;
+  late Animation<double> boxExitScaleAnimation;
+  late Animation<double> boxExitToCartAnimation;
+
   var isRemoved = 0.obs;
   var cartSize = 35.0.obs;
   var pizzaAnimationBox = false.obs;
   final keyPizza = GlobalKey();
+  late var imagePizza = PizzaMetadata(null, null, null).obs;
+  var cardIconAnimation = 0.obs;
+  var initialTotal = 15.0;
+  var totalValue = 15.0.obs;
+  var totalCart = 0;
+  late BuildContext context;
 
   List<Animation> animationList = <Animation>[].obs;
   var listIngredients = <Ingredient>[].obs;
-
-  var deletedIngredients = <Ingredient>[].obs;
-  // var deletedIngredients = <Ingredient>[
-  //   const Ingredient('', '', <Offset>[
-  //     Offset(0.0, 0.0),
-  //   ])
-  // ].obs;
+  //var deletedIngredients = <Ingredient>[].obs;
+  var deletedIngredients = <Ingredient>[
+    const Ingredient('', '', <Offset>[
+      Offset(0.0, 0.0),
+    ])
+  ].obs;
   RxBool facused = false.obs;
   RxDouble total = 15.0.obs;
   late BoxConstraints pizzaConstraints;
+  //final pizzaSize = PizzaSizeState(PizzaSizeState.m);
   //!size pizza
   var pizzaSizeState = "m".obs;
   RxDouble factor = 0.0.obs;
-  getFactoryBySize(v) {
-    switch (v) {
+  getFactoryBySize(pizzaSizeValue) {
+    switch (pizzaSizeValue) {
       case "s":
         return 0.8;
       case "m":
@@ -54,14 +69,55 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
         vsync: this,
         duration: const Duration(milliseconds: 150),
         reverseDuration: const Duration(milliseconds: 400));
-//!box
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      addPizzaToCard();
+    //!pizza
+    animationControllerPizza = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2500));
+    pizzaScaleAnimation = Tween(begin: 1.0, end: 0.5).animate(CurvedAnimation(
+        parent: animationControllerPizza, curve: const Interval(0.0, 0.2)));
+    pizzaOpacityAnimation = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2500));
+    pizzaOpacityAnimation = CurvedAnimation(
+        parent: animationControllerPizza, curve: const Interval(0.2, 0.4));
+
+    boxEnterScaleAnimation = CurvedAnimation(
+        parent: animationControllerPizza, curve: const Interval(0.0, 0.2));
+
+    boxExitScaleAnimation = Tween(begin: 1.0, end: 1.3).animate(CurvedAnimation(
+        parent: animationControllerPizza, curve: const Interval(0.5, 0.7)));
+
+    boxExitToCartAnimation = CurvedAnimation(
+        parent: animationControllerPizza, curve: const Interval(0.8, 1.0));
+    animationControllerPizza.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        //widget.onComplete();
+      }
+      animationControllerPizza.forward();
     });
+    addPizzaToCard();
+    //!box
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    //   final controler = PizzaOrderDetail.of(context);
+    //   controler.pizzaBoxAnimation.addListener(() {
+    //     if (controler.pizzaBoxAnimation.value) {
+    //       addPizzaToCard();
+    //     }
+    //   });
+    // });
     super.onInit();
   }
 
-  void addPizzaToCard() {}
+//?------------------------------------------------------------------------------
+
+  void addPizzaToCard() {
+    //find position and size of widget
+    RenderRepaintBoundary? boundary = pizzaController.keyPizza.currentContext!
+        .findRenderObject() as RenderRepaintBoundary?;
+    final position = boundary!.localToGlobal(Offset.zero);
+    final size = boundary.size;
+    transformToImage(boundary);
+  }
+
 //!add gredient
   void addIngredient(Ingredient ingredient) {
     listIngredients.add(ingredient);
@@ -94,9 +150,6 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
   }
 
 //!pizzaboxanimation
-  void startPizzaBoxAnimation() {
-    pizzaAnimationBox.value = true;
-  }
 
   Widget buildIngredientAnimationWidget() {
     List<Widget> element = [];
@@ -105,12 +158,12 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
       for (int i = 0; i < listIngredients.length; i++) {
         Ingredient ingredient = listIngredients[i];
         final ingredientWidget = Image.asset(
-          ingredient.image_unit,
+          ingredient.image_unit!,
           height: 40,
         );
-        for (int j = 0; j < ingredient.positions.length; j++) {
+        for (int j = 0; j < ingredient.positions!.length; j++) {
           final animation = animationList[j];
-          final position = ingredient.positions[j];
+          final position = ingredient.positions![j];
           final positionX = position.dx;
           final positionY = position.dy;
 
@@ -186,10 +239,10 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
     animationControllerCart.forward(from: 0.0);
     animationControllerCart.reverse(from: 0.8);
     animationControllerCart.addListener(() {
-      log("@@@@@@cc${animationControllerCart.forward}@@@");
+      //   log("@@@@@@cc${animationControllerCart.forward}@@@");
     });
 
-    log("@@@@@@hi it me @@@");
+    // log("@@@@@@hi it me @@@");
   }
 
   @override
@@ -197,6 +250,7 @@ class PizzaController extends GetxController with GetTickerProviderStateMixin {
     animationController.dispose();
     animationControllerCart.dispose();
     animationControllerRotation.dispose();
+    animationControllerPizza.dispose();
     super.onClose();
   }
 }

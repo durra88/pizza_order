@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 class Ingredient {
-  final String image;
-  final String image_unit;
-  final List<Offset> positions;
+  final String ?image;
+  final String? image_unit;
+  final List<Offset> ?positions;
   const Ingredient(
     this.image,
     this.image_unit,

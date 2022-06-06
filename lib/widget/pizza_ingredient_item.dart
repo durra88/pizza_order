@@ -29,7 +29,7 @@ class PizzaIngredientItem extends StatelessWidget {
                 ? Padding(
                     padding: const EdgeInsets.all(5.0),
                     child: Image.asset(
-                      ingredient.image,
+                      ingredient.image!,
                       fit: BoxFit.contain,
                     ),
                   )
